@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:13
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - 5432:5432
+
+  adonis_app:
+    container_name: adonis_app
+    restart: always
+    depends_on:
+      - postgres
+    build:
+      context: .
+      target: dependencies
+    ports:
+      - ${PORT}:${PORT}
+      - 9229:9229
+    env_file:
+      - .env
+    volumes:
+      - ./:/home/node/app
+      # Uncomment the below line if you developing on MacOS
+      #- /home/node/app/node_modules
+    command: dumb-init node ace serve --watch --node-args="--inspect=0.0.0.0"
+
+volumes:
+  postgres_volume:
